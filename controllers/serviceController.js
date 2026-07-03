@@ -64,8 +64,8 @@ const confirmOrder = async (req, res) => {
   try {
     const db = await initDatabase();
 
-    // Menggunakan db.transaction() untuk menjamin satu sesi transaksi utuh
-    const orderId = await db.transaction(async (tx) => {
+    // PERBAIKAN: Tambahkan argumen "write" ke dalam db.transaction()
+    const orderId = await db.transaction("write", async (tx) => {
       // 1. Ambil data stok produk terupdate di dalam transaksi
       const productResult = await tx.execute({
         sql: "SELECT price, stock FROM products WHERE id = ?",
