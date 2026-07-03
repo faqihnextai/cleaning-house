@@ -4,43 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - CleanHouse</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Fonts & Tailwind -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { font-family: 'Source Sans 3', sans-serif; }
+        h1, h2, h3, h4, .font-display { font-family: 'Playfair Display', serif; letter-spacing: -0.02em; }
+    </style>
 </head>
-<body class="bg-light">
+<body class="bg-[#FAFAF9] text-[#1C1917] min-h-screen flex items-center justify-center antialiased p-4">
 
-<div class="container">
-    <div class="row justify-content-center align-items-center vh-100">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <h3 class="text-center mb-2 text-info">✨ CleanHouse</h3>
-                    <p class="text-center text-muted small mb-4">Masuk untuk memesan jasa pembersihan</p>
-                    
-                    <% if (typeof error !== 'undefined' && error) { %>
-                        <div class="alert alert-danger py-2 small"><%= error %></div>
-                    <% } %>
+<div class="w-full max-w-[400px]">
+    <div class="bg-[#F5F5F4] rounded-[12px] border border-[#D6D3D1] p-8 shadow-[0_4px_16px_rgba(28,25,23,0.04)] relative overflow-hidden">
+        <!-- Top Project Color Strip -->
+        <div class="absolute top-0 left-0 right-0 h-1 bg-[#C2410C]"></div>
 
-                    <form action="/auth/login" method="POST">
-                        <div class="mb-3">
-                            <label for="email" class="form-label small">Alamat Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required placeholder="nama@mail.com">
-                        </div>
-                        <div class="mb-4">
-                            <label for="password" class="form-label small">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
-                        </div>
-                        <button type="submit" class="btn btn-info text-white w-100">Masuk Sekarang</button>
-                    </form>
-                    
-                    <div class="text-center mt-4 small">
-                        <span class="text-muted">Belum punya akun?</span> 
-                        <a href="/auth/register" class="text-decoration-none text-info fw-bold">Daftar di sini</a>
-                    </div>
+        <h3 class="text-center text-3xl font-bold text-[#C2410C] mb-1 font-display">CleanHouse.</h3>
+        <p class="text-center text-[#57534E] text-[14px] mb-6">Masuk untuk memesan jasa pembersihan</p>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="bg-[#DC2626]/10 border border-[#DC2626] text-[#DC2626] rounded-[8px] p-3 text-[14px] mb-4 text-center font-semibold">
+                <%= error %>
+            </div>
+        <% } %>
 
-                    <div class="text-center mt-3">
-                        <a href="/" class="text-decoration-none small text-muted">&larr; Kembali ke Beranda</a>
-                    </div>
-                </div>
+        <form action="/auth/login" method="POST" class="space-y-4">
+            <div>
+                <label for="email" class="block text-[14px] font-semibold text-[#1C1917] mb-1">Alamat Email</label>
+                <input type="email" id="email" name="email" required placeholder="nama@mail.com" class="w-full text-[16px] p-3 rounded-[8px] border border-[#D6D3D1] bg-[#FAFAF9] text-[#1C1917] placeholder-[#78716C] focus:outline-none focus:border-[#C2410C] focus:ring-[3px] focus:ring-[#C2410C]/12 transition-all">
+            </div>
+            
+            <div>
+                <label for="password" class="block text-[14px] font-semibold text-[#1C1917] mb-1">Password</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••" class="w-full text-[16px] p-3 rounded-[8px] border border-[#D6D3D1] bg-[#FAFAF9] text-[#1C1917] placeholder-[#78716C] focus:outline-none focus:border-[#C2410C] focus:ring-[3px] focus:ring-[#C2410C]/12 transition-all mb-2">
+            </div>
+            
+            <button type="submit" class="w-full bg-[#C2410C] hover:bg-[#9A3412] hover:shadow-[0_4px_12px_rgba(194,65,12,0.25)] text-white font-semibold h-[40px] px-4 rounded-[8px] text-[14px] transition-all duration-150 cursor-pointer mt-2">
+                Masuk Sekarang
+            </button>
+        </form>
+        
+        <div class="text-center mt-6 text-[14px] space-y-3">
+            <div>
+                <span class="text-[#57534E]">Belum punya akun?</span> 
+                <a href="/auth/register" class="text-[#C2410C] font-semibold hover:underline ml-1">Daftar di sini</a>
+            </div>
+            <div class="pt-2 border-t border-[#D6D3D1]/40">
+                <a href="/" class="text-[#78716C] hover:text-[#1C1917] text-[12px] font-semibold transition-colors">&larr; Kembali ke Beranda</a>
             </div>
         </div>
     </div>

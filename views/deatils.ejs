@@ -4,39 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= service.name %> - CleanHouse</title>
+    <!-- Fonts & Tailwind -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { font-family: 'Source Sans 3', sans-serif; }
+        h1, h2, h3, h4, .font-display { font-family: 'Playfair Display', serif; letter-spacing: -0.02em; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-[#FAFAF9] text-[#1C1917] min-h-screen flex flex-col justify-between antialiased">
 
-    <nav class="bg-white shadow-sm border-b border-slate-200">
-        <div class="max-w-4xl mx-auto px-4 py-4">
-            <a href="/" class="text-xl font-bold text-blue-600 tracking-wide">&larr; CleanHouse.</a>
+    <!-- Navigation -->
+    <nav class="bg-[#FAFAF9]/80 backdrop-blur-md sticky top-0 z-50 border-b border-[#D6D3D1]">
+        <div class="max-w-[1200px] mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="/" class="text-2xl font-bold text-[#C2410C] tracking-wide font-display">CleanHouse.</a>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-4 py-12 flex-1 w-full">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12">
-            <span class="bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Layanan Pilihan</span>
-            <h1 class="text-3xl font-extrabold text-slate-900 mt-4 mb-2"><%= service.name %></h1>
+    <!-- Main Content -->
+    <main class="max-w-[1200px] mx-auto px-6 py-12 flex-1 w-full flex justify-center items-center">
+        <div class="bg-[#F5F5F4] rounded-[12px] border border-[#D6D3D1] p-8 md:p-12 max-w-2xl w-full transition-all duration-150 hover:shadow-[0_4px_16px_rgba(28,25,23,0.06)] border-l-4 border-l-[#C2410C]">
+            <span class="bg-[#F59E0B] text-white text-[11px] font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
+                Layanan Pilihan
+            </span>
             
-            <p class="text-2xl font-bold text-amber-600 mb-6">
-                Rp <%= service.price.toLocaleString('id-ID') %> <span class="text-sm font-normal text-slate-400">/ paket</span>
+            <h1 class="text-4xl font-bold text-[#1C1917] mt-4 mb-2"><%= service.name %></h1>
+            
+            <p class="text-2xl font-semibold text-[#C2410C] mb-6">
+                Rp <%= service.price.toLocaleString('id-ID') %> <span class="text-sm font-normal text-[#57534E]">/ paket</span>
             </p>
             
-            <hr class="border-slate-100 my-6" />
+            <hr class="border-[#D6D3D1] my-6" />
 
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">Deskripsi Layanan</h3>
-            <p class="text-slate-600 leading-relaxed mb-8"><%= service.description %></p>
+            <h3 class="text-xl font-bold text-[#1C1917] mb-2">Deskripsi Layanan</h3>
+            <p class="text-[#57534E] leading-relaxed mb-8 text-[16px]"><%= service.description %></p>
 
-            <button onclick="alert('Fitur pemesanan akan segera datang!')" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition text-center inline-block">
+            <button onclick="alert('Fitur pemesanan akan segera datang!')" class="w-full md:w-auto bg-[#C2410C] hover:bg-[#9A3412] hover:shadow-[0_4px_12px_rgba(194,65,12,0.25)] text-white font-semibold h-[48px] px-6 rounded-[8px] transition-all duration-150 text-center inline-block cursor-pointer">
                 Pesan Layanan Sekarang
             </button>
         </div>
     </main>
 
-    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800">
-        <div class="max-w-4xl mx-auto px-4 text-center text-sm">
-            <p>&copy; 2026 CleanHouse Inc. Semua Hak Dilindungi.</p>
+    <!-- Footer -->
+    <footer class="bg-[#F5F5F4] text-[#78716C] py-6 border-t border-[#D6D3D1]">
+        <div class="max-w-[1200px] mx-auto px-6 text-center text-[14px]">
+            <p>&copy; 2026 CleanHouse. Tangerang, Indonesia.</p>
         </div>
     </footer>
 

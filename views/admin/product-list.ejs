@@ -4,73 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Jasa - CleanHouse</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { font-family: 'Source Sans 3', sans-serif; }
+        h1, h2, h3, h4, .font-display { font-family: 'Playfair Display', serif; letter-spacing: -0.02em; }
+    </style>
 </head>
-<body class="bg-light">
+<body class="bg-[#FAFAF9] text-[#1C1917] min-h-screen flex flex-col justify-between antialiased">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3 mb-5">
-        <div class="container">
-            <a class="navbar-brand fw-bold text-info" href="/">✨ CleanHouse</a>
-        </div>
-    </nav>
+    <nav class="bg-[#FAFAF9]/80 backdrop-blur-md sticky top-0 z-50 border-b border-[#D6D3D1]"> 
+        <div class="max-w-[1200px] mx-auto px-6 py-4 flex items-center justify-between"> 
+            <a href="/" class="text-2xl font-bold text-[#C2410C] font-display">CleanHouse.</a> 
+        </div> 
+    </nav> 
 
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3 mb-4">
-                <div class="list-group shadow-sm">
-                    <a href="/admin/dashboard" class="list-group-item list-group-item-action">Dashboard Admin</a>
-                    <a href="/admin/products" class="list-group-item list-group-item-action active bg-info border-info">Kelola Layanan Jasa</a>
-                </div>
-            </div>
+    <main class="max-w-[1200px] mx-auto w-full px-6 py-12 flex-1">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            
+            <aside class="col-span-1"> [cite: 117]
+                <div class="bg-[#F5F5F4] rounded-[12px] border border-[#D6D3D1] overflow-hidden flex flex-col text-[14px]"> [cite: 117]
+                    <a href="/admin/dashboard" class="px-4 py-3 text-[#57534E] hover:bg-[#E7E5E4] transition-colors">Dashboard Admin</a> [cite: 117]
+                    <a href="/admin/products" class="px-4 py-3 text-[#C2410C] font-semibold bg-[#FAFAF9] border-l-[3px] border-l-[#C2410C]">Kelola Layanan Jasa</a> [cite: 117]
+                </div> [cite: 117]
+            </aside> [cite: 118]
 
-            <div class="col-md-9">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Daftar Jasa Pembersihan</h2>
-                    <a href="/admin/products/add" class="btn btn-info text-white btn-sm">+ Tambah Jasa Baru</a>
-                </div>
+            <section class="col-span-1 md:col-span-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"> [cite: 118]
+                    <h2 class="text-3xl font-bold text-[#1C1917] font-display">Daftar Jasa Pembersihan</h2> [cite: 118]
+                    <a href="/admin/products/add" class="bg-[#C2410C] hover:bg-[#9A3412] hover:shadow-[0_4px_12px_rgba(194,65,12,0.25)] text-white font-semibold h-[36px] px-4 rounded-[8px] text-[12px] inline-flex items-center justify-center transition-all duration-150">+ Tambah Jasa Baru</a> [cite: 118]
+                </div> [cite: 118]
 
                 <% if (typeof msg !== 'undefined' && msg === 'success_delete') { %>
-                    <div class="alert alert-success py-2 small">Data layanan berhasil dihapus!</div>
+                    <div class="bg-[#16A34A]/10 border border-[#16A34A] text-[#16A34A] rounded-[8px] p-3 text-[14px] mb-4 text-center font-semibold">Data layanan berhasil dihapus!</div> [cite: 119]
                 <% } %>
 
-                <div class="table-responsive bg-white p-3 rounded shadow-sm">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th width="5%">No</th>
-                                <th>Nama Layanan</th>
-                                <th>Harga</th>
-                                <th>Kapasitas/Stok Harian</th>
-                                <th width="20%" class="text-center">Aksi</th>
+                <div class="w-full overflow-x-auto bg-[#F5F5F4] border border-[#D6D3D1] rounded-[12px] p-4 shadow-[0_4px_16px_rgba(28,25,23,0.02)]"> [cite: 119]
+                    <table class="w-full text-left border-collapse text-[14px]"> [cite: 120]
+                        <thead>
+                            <tr class="border-b border-[#D6D3D1] text-[#78716C]"> [cite: 120]
+                                <th class="pb-3 pl-2 font-semibold" width="5%">No</th> [cite: 121]
+                                <th class="pb-3 font-semibold">Nama Layanan</th> [cite: 121]
+                                <th class="pb-3 font-semibold">Harga</th> [cite: 121]
+                                <th class="pb-3 font-semibold">Kapasitas/Stok Harian</th> [cite: 122]
+                                <th class="pb-3 pr-2 font-semibold text-center" width="20%">Aksi</th> [cite: 122]
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-[#D6D3D1]/40"> [cite: 123]
                             <% if (services.length === 0) { %>
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">Belum ada layanan jasa yang didaftarkan.</td>
-                                </tr>
-                            <% } else { %>
-                                <% services.forEach((srv, index) => { %>
-                                    <tr>
-                                        <td><%= index + 1 %></td>
-                                        <td>
-                                            <strong><%= srv.name %></strong>
-                                            <small class="d-block text-muted text-truncate" style="max-width: 300px;"><%= srv.description %></small>
-                                        </td>
-                                        <td>Rp <%= srv.price.toLocaleString('id-ID') %></td>
-                                        <td><%= srv.stock %> Sesi</td>
-                                        <td class="text-center">
-                                            <a href="/admin/products/edit/<%= srv.id %>" class="btn btn-warning btn-sm me-1">Edit</a>
-                                            <a href="/admin/products/delete/<%= srv.id %>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus layanan ini?')">Hapus</a>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                                <tr> [cite: 123]
+                                    <td colspan="5" class="text-center text-[#78716C] py-8">Belum ada layanan jasa yang didaftarkan.</td> [cite: 124]
+                                </tr> [cite: 124]
+                            <% } else { %> [cite: 124]
+                                <% services.forEach((srv, index) => { %> [cite: 125]
+                                    <tr class="hover:bg-[#E7E5E4]/30 transition-colors"> [cite: 125]
+                                        <td class="py-4 pl-2 font-mono text-[#78716C]"><%= index + 1 %></td> [cite: 126]
+                                        <td class="py-4 pr-4"> [cite: 126]
+                                            <strong class="text-[#1C1917] block text-[16px]"><%= srv.name %></strong> [cite: 126]
+                                            <span class="block text-[#57534E] text-[12px] max-w-[300px] truncate"><%= srv.description %></span> [cite: 127]
+                                        </td> [cite: 127]
+                                        <td class="py-4 text-[#1C1917] font-medium">Rp <%= srv.price.toLocaleString('id-ID') %></td> [cite: 128]
+                                        <td class="py-4 text-[#57534E]"><%= srv.stock %> Sesi</td> [cite: 128]
+                                        <td class="py-4 pr-2 text-center"> [cite: 128]
+                                            <div class="inline-flex gap-2"> [cite: 129]
+                                                <a href="/admin/products/edit/<%= srv.id %>" class="border border-[#D6D3D1] bg-[#FAFAF9] hover:bg-[#E7E5E4] text-[#1C1917] font-semibold h-[32px] px-3 flex items-center justify-center rounded-[8px] text-[12px] transition-colors">Edit</a> [cite: 129]
+                                                <a href="/admin/products/delete/<%= srv.id %>" class="bg-[#DC2626] hover:bg-[#DC2626]/90 text-white font-semibold h-[32px] px-3 flex items-center justify-center rounded-[8px] text-[12px] transition-colors" onclick="return confirm('Yakin ingin menghapus layanan ini?')">Hapus</a> [cite: 130]
+                                            </div> [cite: 130]
+                                        </td> [cite: 129]
+                                    </tr> [cite: 130]
+                                <% }) %> [cite: 131]
+                            <% } %> [cite: 131]
+                        </tbody> [cite: 131]
+                    </table> [cite: 132]
+                </div> [cite: 132]
+            </section>
         </div>
-    </div>
+    </main>
+
+    <footer class="bg-[#F5F5F4] text-[#78716C] py-6 border-t border-[#D6D3D1]">
+        <div class="max-w-[1200px] mx-auto px-6 text-center text-[14px]">
+            &copy; 2026 CleanHouse. Tangerang, Indonesia.
+        </div>
+    </footer>
 </body>
 </html>

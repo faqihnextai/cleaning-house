@@ -4,50 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ubah Jasa - CleanHouse</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { font-family: 'Source Sans 3', sans-serif; }
+        h1, h2, h3, h4, .font-display { font-family: 'Playfair Display', serif; letter-spacing: -0.02em; }
+    </style>
 </head>
-<body class="bg-light">
+<body class="bg-[#FAFAF9] text-[#1C1917] min-h-screen flex items-center justify-center antialiased p-4">
 
-    <div class="container my-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4">
-                        <h4 class="mb-4">Ubah Data Layanan Jasa</h4>
-                        
-                        <% if (typeof error !== 'undefined' && error) { %>
-                            <div class="alert alert-danger py-2 small"><%= error %></div>
-                        <% } %>
+<div class="w-full max-w-2xl">
+    <div class="bg-[#F5F5F4] rounded-[12px] border border-[#D6D3D1] p-8 shadow-[0_4px_16px_rgba(28,25,23,0.04)] relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-[#C2410C]"></div>
 
-                        <form action="/admin/products/edit/<%= product.id %>" method="POST">
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold">Nama Layanan Jasa</label>
-                                <input type="text" class="form-control" name="name" value="<%= product.name %>" required>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <label class="form-label small fw-bold">Harga (Rp)</label>
-                                    <input type="number" class="form-control" name="price" value="<%= product.price %>" required>
-                                </div>
-                                <div class="col">
-                                    <label class="form-label small fw-bold">Kuota Harian/Stok Sesi</label>
-                                    <input type="number" class="form-control" name="stock" value="<%= product.stock %>" required>
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label small fw-bold">Deskripsi Tugas & Ketentuan</label>
-                                <textarea class="form-control" name="description" rows="4"><%= product.description %></textarea>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between">
-                                <a href="/admin/products" class="btn btn-light text-muted btn-sm">Batal</a>
-                                <button type="submit" class="btn btn-info text-white btn-sm px-4">Perbarui Layanan</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+        <h4 class="text-3xl font-bold text-[#1C1917] mb-6 font-display">Ubah Data Layanan Jasa</h4> [cite: 105]
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="bg-[#DC2626]/10 border border-[#DC2626] text-[#DC2626] rounded-[8px] p-3 text-[14px] mb-4 text-center font-semibold"> [cite: 106]
+                <%= error %>
             </div>
-        </div>
-    </div>
+        <% } %>
+
+        <form action="/admin/products/edit/<%= product.id %>" method="POST" class="space-y-4"> [cite: 106]
+            <div class="mb-3"> [cite: 107]
+                <label class="block text-[14px] font-semibold text-[#1C1917] mb-1">Nama Layanan Jasa</label> [cite: 107]
+                <input type="text" name="name" value="<%= product.name %>" required class="w-full text-[16px] p-3 rounded-[8px] border border-[#D6D3D1] bg-[#FAFAF9] text-[#1C1917] focus:outline-none focus:border-[#C2410C] focus:ring-[3px] focus:ring-[#C2410C]/12 transition-all"> [cite: 107]
+            </div> [cite: 108]
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[14px] font-semibold text-[#1C1917] mb-1">Harga (Rp)</label> [cite: 109]
+                    <input type="number" name="price" value="<%= product.price %>" required class="w-full text-[16px] p-3 rounded-[8px] border border-[#D6D3D1] bg-[#FAFAF9] text-[#1C1917] focus:outline-none focus:border-[#C2410C] focus:ring-[3px] focus:ring-[#C2410C]/12 transition-all"> [cite: 109]
+                </div>
+                
+                <div>
+                    <label class="block text-[14px] font-semibold text-[#1C1917] mb-1">Kuota Harian/Stok Sesi</label> [cite: 110]
+                    <input type="number" name="stock" value="<%= product.stock %>" required class="w-full text-[16px] p-3 rounded-[8px] border border-[#D6D3D1] bg-[#FAFAF9] text-[#1C1917] focus:outline-none focus:border-[#C2410C] focus:ring-[3px] focus:ring-[#C2410C]/12 transition-all"> [cite: 110]
+                </div> [cite: 111]
+            </div>
+            
+            <div>
+                <label class="block text-[14px] font-semibold text-[#1C1917] mb-1">Deskripsi Tugas & Ketentuan</label> [cite: 112]
+                <textarea name="description" rows="4" class="w-full text-[16px] p-3 rounded-[8px] border border-[#D6D3D1] bg-[#FAFAF9] text-[#1C1917] focus:outline-none focus:border-[#C2410C] focus:ring-[3px] focus:ring-[#C2410C]/12 transition-all"><%= product.description %></textarea> [cite: 112]
+            </div>
+            
+            <div class="flex justify-between items-center pt-2">
+                <a href="/admin/products" class="text-[14px] text-[#57534E] hover:text-[#1C1917] font-semibold transition-colors">Batal</a> [cite: 113]
+                <button type="submit" class="bg-[#C2410C] hover:bg-[#9A3412] hover:shadow-[0_4px_12px_rgba(194,65,12,0.25)] text-white font-semibold h-[40px] px-6 rounded-[8px] text-[14px] transition-all duration-150 cursor-pointer">Perbarui Layanan</button> [cite: 114]
+            </div>
+        </form>
+    </div> [cite: 115]
+</div>
+
 </body>
 </html>
