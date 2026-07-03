@@ -2,9 +2,14 @@ const { createClient } = require('@libsql/client');
 const path = require('path');
 
 async function initDatabase() {
-    // Membuka database. Gunakan ENV jika di Vercel, jika tidak ada pakai file lokal.
+    // Tentukan path ke folder /tmp jika di lingkungan Vercel
+    const isVercel = process.env.VERCEL;
+    const localDbPath = isVercel 
+        ? '/tmp/database.sqlite' 
+        : path.join(process.cwd(), 'database.sqlite');
+
     const client = createClient({
-        url: process.env.TURSO_DATABASE_URL || `file:${path.join(process.cwd(), 'database.sqlite')}`,
+        url: process.env.TURSO_DATABASE_URL || `file:${localDbPath}`,
         authToken: process.env.TURSO_AUTH_TOKEN || undefined
     });
 
