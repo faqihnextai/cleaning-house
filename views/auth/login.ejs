@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CleanHouse</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container">
+    <div class="row justify-content-center align-items-center vh-100">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="text-center mb-2 text-info">✨ CleanHouse</h3>
+                    <p class="text-center text-muted small mb-4">Masuk untuk memesan jasa pembersihan</p>
+                    
+                    <% if (typeof error !== 'undefined' && error) { %>
+                        <div class="alert alert-danger py-2 small"><%= error %></div>
+                    <% } %>
+
+                    <form action="/auth/login" method="POST">
+                        <div class="mb-3">
+                            <label for="email" class="form-label small">Alamat Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required placeholder="nama@mail.com">
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="form-label small">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="btn btn-info text-white w-100">Masuk Sekarang</button>
+                    </form>
+                    
+                    <div class="text-center mt-4 small">
+                        <span class="text-muted">Belum punya akun?</span> 
+                        <a href="/auth/register" class="text-decoration-none text-info fw-bold">Daftar di sini</a>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="/" class="text-decoration-none small text-muted">&larr; Kembali ke Beranda</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
