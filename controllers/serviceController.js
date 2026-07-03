@@ -7,8 +7,10 @@ const initDatabase = require('../database');
 // Menggantikan index.php
 const getAllServices = async (req, res) => {
     try {
-        const db = await initDatabase();
-        const services = await db.all('SELECT * FROM products WHERE stock > 0 ORDER BY id DESC');
+        const db = await initDatabase(); // Asumsi inisialisasi koneksi awal tetap async
+        const services = db.prepare('SELECT * FROM products WHERE stock > 0 ORDER BY id DESC').all();
+        
+        // Perbaikan sintaks: Menambahkan objek res.render yang terpotong di kode awal
         res.render('index', { 
             services, 
             user: req.session.user || null 
@@ -29,8 +31,8 @@ const processOrder = async (req, res) => {
 
     try {
         const db = await initDatabase();
-        // Cek apakah produk ada dan kuotanya cukup
-        const product = await db.get('SELECT * FROM products WHERE id = ?', [productId]);
+        // better-sqlite3 menggunakan .get() langsung dari statement yang di-prepare
+        const product = db.prepare('SELECT * FROM products WHERE id = ?').get(productId);
         
         if (!product) {
             return res.status(404).send("Layanan jasa tidak ditemukan.");
@@ -53,7 +55,7 @@ const confirmOrder = async (req, res) => {
     const userId = req.session.user.id;
     const productId = parseInt(req.body.product_id);
     const quantity = parseInt(req.body.quantity);
-    const paymentMethod = req.body.payment_method; // Menangkap opsi bayar pilihan user
+    const paymentMethod = req.body.payment_method; 
 
     if (!productId || !quantity || quantity <= 0) {
         return res.redirect('/');
@@ -62,9 +64,10 @@ const confirmOrder = async (req, res) => {
     const db = await initDatabase();
 
     try {
-        await db.run('BEGIN TRANSACTION');
+        // Kontrol transaksi sinkronus pada better-sqlite3
+        db.prepare('BEGIN').run();
 
-        const product = await db.get('SELECT price, stock FROM products WHERE id = ?', [productId]);
+        const product = db.prepare('SELECT price, stock FROM products WHERE id = ?').get(productId);
         if (!product || product.stock < quantity) {
             throw new Error("Layanan tidak valid atau kuota harian habis mendadak.");
         }
@@ -73,34 +76,35 @@ const confirmOrder = async (req, res) => {
         const totalPrice = subtotal;
 
         // A. Masukkan data ke induk transaksi orders
-        const orderResult = await db.run(
-            "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, 'paid')",
-            [userId, totalPrice]
-        );
-        const orderId = orderResult.lastID;
+        const orderResult = db.prepare(
+            "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, 'paid')"
+        ).run(userId, totalPrice);
+        
+        // better-sqlite3 mengembalikan ID terakhir lewat properti .lastInsertRowid
+        const orderId = orderResult.lastInsertRowid;
 
         // B. Masukkan rincian detail item
-        await db.run(
-            "INSERT INTO order_details (order_id, product_id, quantity, subtotal) VALUES (?, ?, ?, ?)",
-            [orderId, productId, quantity, subtotal]
-        );
+        db.prepare(
+            "INSERT INTO order_details (order_id, product_id, quantity, subtotal) VALUES (?, ?, ?, ?)"
+        ).run(orderId, productId, quantity, subtotal);
 
         // C. Potong stok kuota harian jasa secara aman
-        await db.run(
-            "UPDATE products SET stock = stock - ? WHERE id = ?",
-            [quantity, productId]
-        );
+        db.prepare(
+            "UPDATE products SET stock = stock - ? WHERE id = ?"
+        ).run(quantity, productId);
 
-        await db.run('COMMIT');
+        db.prepare('COMMIT').run();
         
         // Oper ke halaman struk/invoice akhir
         res.redirect(`/struk?order_id=${orderId}`);
 
     } catch (error) {
-        await db.run('ROLLBACK');
+        // Rollback jika terjadi error
+        try { db.prepare('ROLLBACK').run(); } catch (_) {}
         res.status(400).send("Transaksi gagal didebet: " + error.message);
     }
 };
+
 // Menggantikan struk.php
 const getReceipt = async (req, res) => {
     if (!req.query.order_id) return res.redirect('/');
@@ -111,21 +115,21 @@ const getReceipt = async (req, res) => {
     try {
         const db = await initDatabase();
 
-        const order = await db.get(`
+        const order = db.prepare(`
             SELECT orders.*, users.name as customer_name 
             FROM orders 
             JOIN users ON orders.user_id = users.id 
             WHERE orders.id = ? AND orders.user_id = ?
-        `, [orderId, userId]);
+        `).get(orderId, userId);
 
         if (!order) return res.redirect('/');
 
-        const details = await db.all(`
+        const details = db.prepare(`
             SELECT order_details.*, products.name as service_name 
             FROM order_details 
             JOIN products ON order_details.product_id = products.id 
             WHERE order_details.order_id = ?
-        `, [orderId]);
+        `).all(orderId);
 
         res.render('struk', { order, details });
     } catch (error) {
@@ -152,13 +156,13 @@ const handleRegister = async (req, res) => {
     const { name, email, password } = req.body;
     try {
         const db = await initDatabase();
-        const existing = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+        const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
         
         if (existing) {
             return res.render('auth/register', { error: 'Email ini sudah terdaftar! Silakan gunakan email lain.' });
         }
         
-        await db.run('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', [name, email, password, 'customer']);
+        db.prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)').run(name, email, password, 'customer');
         res.render('auth/register', { success: 'Registrasi berhasil! Silakan masuk menggunakan akun Anda.' });
     } catch (e) {
         res.render('auth/register', { error: 'Terjadi kesalahan sistem: ' + e.message });
@@ -177,7 +181,7 @@ const handleLogin = async (req, res) => {
     const { email, password } = req.body;
     try {
         const db = await initDatabase();
-        const user = await db.get('SELECT * FROM users WHERE email = ? AND password = ?', [email, password]);
+        const user = db.prepare('SELECT * FROM users WHERE email = ? AND password = ?').get(email, password);
         
         if (user) {
             req.session.user = user;
@@ -204,8 +208,8 @@ const handleLogout = (req, res) => {
 const getAdminDashboard = async (req, res) => {
     try {
         const db = await initDatabase();
-        const totalLayanan = (await db.get("SELECT COUNT(*) as c FROM products")).c;
-        const totalPesanan = (await db.get("SELECT COUNT(*) as c FROM orders")).c;
+        const totalLayanan = db.prepare("SELECT COUNT(*) as c FROM products").get().c;
+        const totalPesanan = db.prepare("SELECT COUNT(*) as c FROM orders").get().c;
         res.render('admin/dashboard', { totalLayanan, totalPesanan });
     } catch (error) {
         res.status(500).send("Error dashboard: " + error.message);
@@ -216,7 +220,7 @@ const getAdminDashboard = async (req, res) => {
 const getAdminProducts = async (req, res) => {
     try {
         const db = await initDatabase();
-        const services = await db.all('SELECT * FROM products ORDER BY id DESC');
+        const services = db.prepare('SELECT * FROM products ORDER BY id DESC').all();
         res.render('admin/product-list', { services, msg: req.query.msg || null });
     } catch (error) {
         res.status(500).send("Error memuat daftar produk: " + error.message);
@@ -238,10 +242,9 @@ const handleAdminProductAdd = async (req, res) => {
 
     try {
         const db = await initDatabase();
-        await db.run(
-            'INSERT INTO products (name, price, stock, description) VALUES (?, ?, ?, ?)', 
-            [name.trim(), parseInt(price), parseInt(stock), description.trim()]
-        );
+        db.prepare(
+            'INSERT INTO products (name, price, stock, description) VALUES (?, ?, ?, ?)'
+        ).run(name.trim(), parseInt(price), parseInt(stock), description.trim());
         res.redirect('/admin/products');
     } catch (error) {
         res.render('admin/product-add', { error: 'Gagal menyimpan data: ' + error.message });
@@ -252,7 +255,7 @@ const handleAdminProductAdd = async (req, res) => {
 const getAdminProductEdit = async (req, res) => {
     try {
         const db = await initDatabase();
-        const product = await db.get('SELECT * FROM products WHERE id = ?', [req.params.id]);
+        const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
         if (!product) return res.redirect('/admin/products');
         
         res.render('admin/product-edit', { product });
@@ -272,10 +275,9 @@ const handleAdminProductEdit = async (req, res) => {
 
     try {
         const db = await initDatabase();
-        await db.run(
-            'UPDATE products SET name=?, price=?, stock=?, description=? WHERE id=?', 
-            [name.trim(), parseInt(price), parseInt(stock), description.trim(), id]
-        );
+        db.prepare(
+            'UPDATE products SET name=?, price=?, stock=?, description=? WHERE id=?'
+        ).run(name.trim(), parseInt(price), parseInt(stock), description.trim(), id);
         res.redirect('/admin/products');
     } catch (error) {
         res.render('admin/product-edit', { product: { id, name, price, stock, description }, error: 'Gagal memperbarui data: ' + error.message });
@@ -286,7 +288,7 @@ const handleAdminProductEdit = async (req, res) => {
 const handleAdminProductDelete = async (req, res) => {
     try {
         const db = await initDatabase();
-        await db.run('DELETE FROM products WHERE id = ?', [req.params.id]);
+        db.prepare('DELETE FROM products WHERE id = ?').run(req.params.id);
         res.redirect('/admin/products?msg=success_delete');
     } catch (error) {
         res.status(500).send("Gagal menghapus data: " + error.message);
