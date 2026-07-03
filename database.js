@@ -1,12 +1,15 @@
-const Database = require('better-sqlite3');
+const { createClient } = require('@libsql/client');
 const path = require('path');
 
-function initDatabase() {
-    // Membuka database (akan otomatis membuat file jika belum ada)
-    const db = new Database(path.join(process.cwd(), 'database.sqlite'), { verbose: console.log });
+async function initDatabase() {
+    // Membuka database. Gunakan ENV jika di Vercel, jika tidak ada pakai file lokal.
+    const client = createClient({
+        url: process.env.TURSO_DATABASE_URL || `file:${path.join(process.cwd(), 'database.sqlite')}`,
+        authToken: process.env.TURSO_AUTH_TOKEN || undefined
+    });
 
     // 1. Tabel Users
-    db.prepare(`
+    await client.execute(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -14,10 +17,10 @@ function initDatabase() {
             password TEXT NOT NULL,
             role TEXT DEFAULT 'user'
         )
-    `).run();
+    `);
 
     // 2. Tabel Products (Layanan Jasa)
-    db.prepare(`
+    await client.execute(`
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -25,10 +28,10 @@ function initDatabase() {
             description TEXT,
             stock INTEGER DEFAULT 0
         )
-    `).run();
+    `);
 
     // 3. Tabel Orders (Induk Transaksi)
-    db.prepare(`
+    await client.execute(`
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -37,10 +40,10 @@ function initDatabase() {
             order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
-    `).run();
+    `);
 
     // 4. Tabel Order Details (Rincian Transaksi)
-    db.prepare(`
+    await client.execute(`
         CREATE TABLE IF NOT EXISTS order_details (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             order_id INTEGER NOT NULL,
@@ -50,41 +53,33 @@ function initDatabase() {
             FOREIGN KEY (order_id) REFERENCES orders(id),
             FOREIGN KEY (product_id) REFERENCES products(id)
         )
-    `).run();
+    `);
 
     // Data Awal Jasa jika kosong
-    const productCount = db.prepare('SELECT COUNT(*) as total FROM products').get();
-    if (productCount.total === 0) {
-        const insertProduct = db.prepare(`
-            INSERT INTO products (name, price, description, stock) VALUES (?, ?, ?, ?)
-        `);
-        
-        // Menggunakan transaksi agar eksekusi data awal lebih cepat dan aman
-        const insertInitialProducts = db.transaction(() => {
-            insertProduct.run('Deep Cleaning', 500000, 'Pembersihan menyeluruh termasuk area tersembunyi, kerak kamar mandi, dan debu tebal.', 5);
-            insertProduct.run('Regular Cleaning', 200000, 'Pembersihan harian standar seperti menyapu, mengepel, dan merapikan tempat tidur.', 10);
-            insertProduct.run('Fogging / Disinfektan', 350000, 'Penyemprotan cairan disinfektan untuk membunuh bakter dan virus di dalam rumah.', 3);
-        });
-        
-        insertInitialProducts();
+    const productCount = await client.execute('SELECT COUNT(*) as total FROM products');
+    if (productCount.rows[0].total === 0) {
+        // Menggunakan batch untuk transaksi di libsql
+        await client.batch([
+            { sql: 'INSERT INTO products (name, price, description, stock) VALUES (?, ?, ?, ?)', args: ['Deep Cleaning', 500000, 'Pembersihan menyeluruh termasuk area tersembunyi, kerak kamar mandi, dan debu tebal.', 5] },
+            { sql: 'INSERT INTO products (name, price, description, stock) VALUES (?, ?, ?, ?)', args: ['Regular Cleaning', 200000, 'Pembersihan harian standar seperti menyapu, mengepel, dan merapikan tempat tidur.', 10] },
+            { sql: 'INSERT INTO products (name, price, description, stock) VALUES (?, ?, ?, ?)', args: ['Fogging / Disinfektan', 350000, 'Penyemprotan cairan disinfektan untuk membunuh bakter dan virus di dalam rumah.', 3] }
+        ]);
     }
 
     // Otomatis buat Akun Admin dummy jika belum ada
-    const adminCount = db.prepare("SELECT COUNT(*) as total FROM users WHERE email = 'superadmin@mail.com'").get();
-    if (adminCount.total === 0) {
-        const insertUser = db.prepare(`
-            INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)
-        `);
-
-        const insertInitialUsers = db.transaction(() => {
-            insertUser.run('Admin Super', 'superadmin@mail.com', 'admin123', 'admin');
-            insertUser.run('Faqih Pelanggan', 'faqih@mail.com', 'user123', 'user');
-        });
-
-        insertInitialUsers();
+    const adminCount = await client.execute({
+        sql: "SELECT COUNT(*) as total FROM users WHERE email = ?",
+        args: ['superadmin@mail.com']
+    });
+    
+    if (adminCount.rows[0].total === 0) {
+        await client.batch([
+            { sql: 'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', args: ['Admin Super', 'superadmin@mail.com', 'admin123', 'admin'] },
+            { sql: 'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', args: ['Faqih Pelanggan', 'faqih@mail.com', 'user123', 'user'] }
+        ]);
     }
 
-    return db;
+    return client;
 }
 
 module.exports = initDatabase;
