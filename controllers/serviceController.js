@@ -53,132 +53,112 @@ const processOrder = async (req, res) => {
 };
 
 const confirmOrder = async (req, res) => {
-  const userId = req.session.user.id;
-  const productId = parseInt(req.body.product_id);
-  const quantity = parseInt(req.body.quantity);
+    const userId = req.session.user.id;
+    const productId = parseInt(req.body.product_id);
+    const quantity = parseInt(req.body.quantity);
 
-  if (!productId || !quantity || quantity <= 0) {
-    return res.redirect("/");
-  }
+    if (!productId || !quantity || quantity <= 0) {
+        return res.redirect('/');
+    }
 
-  try {
-    const db = await initDatabase();
+    try {
+        const db = await initDatabase();
 
-    // PERBAIKAN: Tambahkan argumen "write" ke dalam db.transaction()
-    const orderId = await db.transaction("write", async (tx) => {
-      // 1. Ambil data stok produk terupdate di dalam transaksi
-      const productResult = await tx.execute({
-        sql: "SELECT price, stock FROM products WHERE id = ?",
-        args: [productId],
-      });
-      const product = productResult.rows[0];
+        const orderId = await db.transaction("write", async (tx) => {
+            const productResult = await tx.execute({
+                sql: 'SELECT price, stock FROM products WHERE id = ?',
+                args: [productId]
+            });
+            const product = productResult.rows[0];
 
-      if (!product || product.stock < quantity) {
-        throw new Error(
-          "Layanan tidak valid atau kuota harian habis mendadak.",
-        );
-      }
+            if (!product || product.stock < quantity) {
+                throw new Error("Layanan tidak valid atau kuota harian habis mendadak.");
+            }
 
-      const subtotal = product.price * quantity;
-      const totalPrice = subtotal;
+            const subtotal = product.price * quantity;
+            const totalPrice = subtotal;
 
-      // 2. Masukkan data ke tabel orders
-      const orderResult = await tx.execute({
-        sql: "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, 'paid')",
-        args: [userId, totalPrice],
-      });
+            const orderResult = await tx.execute({
+                sql: "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, 'paid')",
+                args: [userId, totalPrice]
+            });
+            
+            // PERBAIKAN AMAN: Paksa konversi BigInt ke String dahulu, lalu ke Integer standar
+            const newOrderId = parseInt(orderResult.lastInsertRowid.toString(), 10);
 
-      // Konversi BigInt dari lastInsertRowid menjadi Number biasa
-      const newOrderId = Number(orderResult.lastInsertRowid.toString());
+            await tx.execute({
+                sql: "INSERT INTO order_details (order_id, product_id, quantity, subtotal) VALUES (?, ?, ?, ?)",
+                args: [newOrderId, productId, quantity, subtotal]
+            });
 
-      // 3. Masukkan rincian detail item ke order_details
-      await tx.execute({
-        sql: "INSERT INTO order_details (order_id, product_id, quantity, subtotal) VALUES (?, ?, ?, ?)",
-        args: [newOrderId, productId, quantity, subtotal],
-      });
+            await tx.execute({
+                sql: "UPDATE products SET stock = stock - ? WHERE id = ?",
+                args: [quantity, productId]
+            });
 
-      // 4. Potong stok kuota produk
-      await tx.execute({
-        sql: "UPDATE products SET stock = stock - ? WHERE id = ?",
-        args: [quantity, productId],
-      });
+            return newOrderId;
+        });
 
-      // Kembalikan orderId keluar dari blok transaksi jika sukses
-      return newOrderId;
-    });
+        // Redirect membawa ID berupa angka bersih
+        res.redirect(`/struk?order_id=${orderId}`);
 
-    // Transaksi otomatis COMMIT jika berhasil sampai sini
-    res.redirect(`/struk?order_id=${orderId}`);
-  } catch (error) {
-    // Transaksi otomatis ROLLBACK oleh LibSQL jika ada error di dalam blok `db.transaction`
-    console.error("Detail Error Transaksi:", error.message);
-    res.status(400).send("Transaksi gagal didebet: " + error.message);
-  }
+    } catch (error) {
+        console.error("Detail Error Transaksi:", error.message);
+        res.status(400).send("Transaksi gagal didebet: " + error.message);
+    }
 };
 
 const getReceipt = async (req, res) => {
-  // 1. Validasi parameter query order_id
-  if (!req.query.order_id) {
-    return res.redirect("/");
-  }
+    if (!req.query.order_id) {
+        return res.redirect('/');
+    }
+    
+    // PERBAIKAN AMAN: Bersihkan parameter jika ada karakter aneh dan parse dengan radiks 10
+    const orderId = parseInt(req.query.order_id, 10);
+    
+    if (!req.session.user || !req.session.user.id) {
+        return res.status(401).send("Sesi Anda telah berakhir. Silakan login kembali.");
+    }
+    
+    // Ambil userId langsung (tidak perlu di-parseInt jika tipenya string/campuran di database)
+    const userId = req.session.user.id; 
 
-  const orderId = parseInt(req.query.order_id, 10);
+    // Validasi diperlonggar: Hanya cek orderId yang wajib berupa angka numerik murni
+    if (isNaN(orderId) || orderId <= 0) {
+        return res.status(400).send("Gagal memuat rincian struk: Parameter ID Transaksi di URL tidak valid.");
+    }
 
-  // 2. Validasi apakah user sudah login dan memiliki ID di session
-  if (!req.session.user || !req.session.user.id) {
-    return res
-      .status(401)
-      .send("Sesi Anda telah berakhir. Silakan login kembali.");
-  }
+    try {
+        const db = await initDatabase();
 
-  const userId = parseInt(req.session.user.id, 10);
-
-  // 3. Cek apakah hasil parsing menghasilkan NaN (Not a Number)
-  if (isNaN(orderId) || isNaN(userId)) {
-    return res
-      .status(400)
-      .send(
-        "Gagal memuat rincian struk: Format ID transaksi atau Pengguna tidak valid.",
-      );
-  }
-
-  try {
-    const db = await initDatabase();
-
-    // Ambil data induk order
-    const orderResult = await db.execute({
-      sql: `SELECT orders.*, users.name as customer_name 
+        // Cari data induk order (LibSQL akan mencocokkan tipe data secara dinamis)
+        const orderResult = await db.execute({
+            sql: `SELECT orders.*, users.name as customer_name 
                   FROM orders 
                   JOIN users ON orders.user_id = users.id 
                   WHERE orders.id = ? AND orders.user_id = ?`,
-      args: [orderId, userId],
-    });
-    const order = orderResult.rows[0];
+            args: [orderId, userId]
+        });
+        const order = orderResult.rows[0];
 
-    // Jika transaksi tidak ditemukan atau bukan milik user yang login
-    if (!order) {
-      return res
-        .status(404)
-        .send(
-          "Struk transaksi tidak ditemukan atau Anda tidak memiliki akses.",
-        );
-    }
+        if (!order) {
+            return res.status(404).send("Struk transaksi tidak ditemukan atau Anda tidak memiliki hak akses.");
+        }
 
-    // Ambil rincian item order
-    const detailsResult = await db.execute({
-      sql: `SELECT order_details.*, products.name as service_name 
+        const detailsResult = await db.execute({
+            sql: `SELECT order_details.*, products.name as service_name 
                   FROM order_details 
                   JOIN products ON order_details.product_id = products.id 
                   WHERE order_details.order_id = ?`,
-      args: [orderId],
-    });
-    const details = detailsResult.rows;
+            args: [orderId]
+        });
+        const details = detailsResult.rows;
 
-    res.render("struk", { order, details });
-  } catch (error) {
-    console.error("Error pada getReceipt:", error);
-    res.status(500).send("Gagal memuat rincian struk: " + error.message);
-  }
+        res.render('struk', { order, details });
+    } catch (error) {
+        console.error("Error pada getReceipt:", error);
+        res.status(500).send("Gagal memuat rincian struk: " + error.message);
+    }
 };
 
 const getAboutPage = (req, res) => {
