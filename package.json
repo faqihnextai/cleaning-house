@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon --watch . server.js"
+    "dev": "nodemon --watch . server.js",
+    "vercel-build": "npm rebuild better-sqlite3 && next build"
   },
   "keywords": [],
   "author": "",
